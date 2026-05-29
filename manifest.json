@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Freelancer Project Copier",
+  "version": "1.0.0",
+  "description": "Automatically copies Freelancer project description and skills when you open a project.",
+  "permissions": [
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "*://*.freelancer.com/projects/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.freelancer.com/projects/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
