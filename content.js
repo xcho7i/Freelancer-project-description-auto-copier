@@ -22,6 +22,19 @@
       .trim();
   }
 
+  function formatDescription(text) {
+    if (!text) return '';
+    // Normalize newlines
+    let t = text.replace(/\r\n?/g, '\n');
+    // Trim each line and collapse multiple spaces within lines
+    t = t.split('\n').map(line => line.replace(/\s+/g, ' ').trim()).join('\n');
+    // Collapse multiple blank lines to a single blank line (paragraph separator)
+    t = t.replace(/\n{2,}/g, '\n\n');
+    // Remove leading/trailing blank lines
+    t = t.replace(/^(\s*\n)+/, '').replace(/(\n\s*)+$/, '');
+    return t;
+  }
+
   function getTextFromElements(selectors) {
     for (const selector of selectors) {
       const element = document.querySelector(selector);
@@ -46,7 +59,8 @@
           if (heading.nextElementSibling) candidates.push(heading.nextElementSibling);
           if (heading.parentElement && heading.parentElement !== heading) candidates.push(heading.parentElement);
           for (const node of candidates) {
-            const text = cleanText(node.innerText || node.textContent || '');
+            const raw = node.innerText || node.textContent || '';
+            const text = formatDescription(raw);
             if (text.length > 20 && !labelRegex.test(text)) {
               return text;
             }
@@ -58,13 +72,16 @@
   }
 
   function getDescription() {
-    let description = getTextFromElements(descriptionSelectors);
-    if (description) {
-      return description;
+    for (const selector of descriptionSelectors) {
+      const element = document.querySelector(selector);
+      if (element) {
+        const raw = element.innerText || element.textContent || '';
+        const desc = formatDescription(raw);
+        if (desc.length > 20) return desc;
+      }
     }
 
-    description = getSectionTextByLabel(/description/i);
-    return description;
+    return getSectionTextByLabel(/description/i);
   }
 
   function getSkills() {
