@@ -170,13 +170,15 @@
 
   function copyDescriptionOnClick() {
     const description = getDescription();
-    if (!description) {
+    const skills = getSkills();
+    if (!description && !skills) {
       return;
     }
 
-    const copied = copyToClipboard(description);
+    const clipboardText = buildClipboardValue(description, skills);
+    const copied = copyToClipboard(clipboardText);
     if (copied) {
-      console.log('Freelancer project description copied to clipboard.');
+      console.log('Freelancer project description and skills copied to clipboard.');
     }
   }
 
