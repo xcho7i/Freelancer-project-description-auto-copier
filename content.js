@@ -1,5 +1,20 @@
 (function () {
-  const alreadyCopiedKey = '__freelancerProjectCopied';
+  const descriptionSelectors = [
+    'app-project-details-description .ProjectDescription',
+    '.ProjectDescription',
+    '.ProjectDescription .ContentWrapper',
+    '.ProjectDescription .Content',
+    '[data-testid="project-description"]',
+    '[data-test="project-description"]',
+    '.ProjectDescription-description',
+    '.project-description',
+    '.JobDetail-description',
+    '.job-description',
+    '#project-description',
+    'section#description',
+    '.Description',
+    '[data-testid="job-description"]'
+  ];
 
   function cleanText(text) {
     return text
@@ -43,23 +58,6 @@
   }
 
   function getDescription() {
-    const descriptionSelectors = [
-      'app-project-details-description .ProjectDescription',
-      '.ProjectDescription',
-      '.ProjectDescription .ContentWrapper',
-      '.ProjectDescription .Content',
-      '[data-testid="project-description"]',
-      '[data-test="project-description"]',
-      '.ProjectDescription-description',
-      '.project-description',
-      '.JobDetail-description',
-      '.job-description',
-      '#project-description',
-      'section#description',
-      '.Description',
-      '[data-testid="job-description"]'
-    ];
-
     let description = getTextFromElements(descriptionSelectors);
     if (description) {
       return description;
@@ -170,65 +168,30 @@
     return parts.join('\n\n');
   }
 
-  function tryCopyForCurrentProject() {
-    if (window[alreadyCopiedKey]) {
-      return;
-    }
-
+  function copyDescriptionOnClick() {
     const description = getDescription();
-    const skills = getSkills();
-    if (!description && !skills) {
+    if (!description) {
       return;
     }
 
-    const clipboardText = buildClipboardValue(description, skills);
-    const copied = copyToClipboard(clipboardText);
+    const copied = copyToClipboard(description);
     if (copied) {
-      window[alreadyCopiedKey] = true;
-      console.log('Freelancer project data copied to clipboard.');
+      console.log('Freelancer project description copied to clipboard.');
     }
   }
 
-  function observeDOM() {
-    const observer = new MutationObserver(() => {
-      tryCopyForCurrentProject();
+  function addDescriptionClickListener() {
+    const selector = descriptionSelectors.join(', ');
+    document.body.addEventListener('click', event => {
+      if (!event.target.closest(selector)) {
+        return;
+      }
+      copyDescriptionOnClick();
     });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  }
-
-  function onPageUpdate() {
-    window[alreadyCopiedKey] = false;
-    tryCopyForCurrentProject();
-  }
-
-  function patchHistoryEvents() {
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-
-    history.pushState = function () {
-      const result = originalPushState.apply(this, arguments);
-      window.dispatchEvent(new Event('locationchange'));
-      return result;
-    };
-
-    history.replaceState = function () {
-      const result = originalReplaceState.apply(this, arguments);
-      window.dispatchEvent(new Event('locationchange'));
-      return result;
-    };
-
-    window.addEventListener('popstate', () => window.dispatchEvent(new Event('locationchange')));
   }
 
   function init() {
-    tryCopyForCurrentProject();
-    observeDOM();
-    patchHistoryEvents();
-    window.addEventListener('locationchange', onPageUpdate);
+    addDescriptionClickListener();
   }
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
